@@ -42,8 +42,8 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(VERSION).then(function(cache) {
       return cache.addAll([
-        '/images/icon.png',
-        '/images/badge.png'
+        'images/icon.png',
+        'images/badge.png'
       ]);
     })
   );
