@@ -1,35 +1,24 @@
-/*
-*
-*  Push Notifications codelab
-*  Copyright 2015 Google Inc. All rights reserved.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      https://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License
-*
-*/
-
 /* eslint-env browser, serviceworker, es6 */
 
 'use strict';
+
+const VERSION = 'v1';
 
 self.addEventListener('push', function(event) {
   console.log('[Service Worker] Push Received.');
   console.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
 
-  const title = 'Push Codelab';
+   const data = event.data.json();
+  // const data = {title: 'This is a title', body: 'This is the content', url: 'https://www.any-url.com'};
+  // const data = {title: 'This is a title', body: 'This is the content'};
+
+  const title = data.title;
   const options = {
-    body: 'Yay it works.',
+    body: data.body,
+    // actions: [{action: 'ACTION_1', title: 'ACTION 1'}],
     icon: 'images/icon.png',
-    badge: 'images/badge.png'
+    badge: 'images/badge.png',
+    data: data
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -40,7 +29,26 @@ self.addEventListener('notificationclick', function(event) {
 
   event.notification.close();
 
+  const data = event.notification.data;
+
+  if (data.url) {
+    event.waitUntil(
+      clients.openWindow(data.url)
+    );
+  }
+});
+
+self.addEventListener('install', function(event) {
   event.waitUntil(
-    clients.openWindow('https://developers.google.com/web/')
+    caches.open(VERSION).then(function(cache) {
+      return cache.addAll([
+        '/images/icon.png',
+        '/images/badge.png'
+      ]);
+    })
   );
+});
+
+this.addEventListener('activate', function(event) {
+  // SW is activated
 });
